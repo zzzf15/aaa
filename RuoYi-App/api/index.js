@@ -18,3 +18,14 @@ export function getIndexBottom(pageIndex) {
 		'data': data
 	})
 }
+// 首页头部列表切换的数据
+export function getHeaderClassify(categoryId) {
+	const data = {
+	  categoryId
+	}
+	return request({
+		'url': '/classify',
+		'method': 'get',
+		'data': data
+	})
+}

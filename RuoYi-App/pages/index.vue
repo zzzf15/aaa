@@ -19,61 +19,33 @@
 						</view>
 					</view>
 				</view>
-				<!-- 首页轮番图 -->
-				<swiper 
-				    class="swiper" 
-				    indicator-dots="indicatorDots"
-				    circular="circular"
-				    indicator-active-color="red"
-				    autoplay="true"
-				    interval = "2000"
-				    easing-function="easeInOutCubic"
-				    >
-				    <swiper-item v-for="(item,index) in banner" :key="index">
-				        <image :src="item.image"></image>
-				    </swiper-item>
-				</swiper>
-				<!-- 轮番底部 -->
-				<view class="home_characteristic">
-					<view class="ul">
-						<view>大牌品质</view>
-						<view>/</view>
-						<view>工厂价格</view>
-						<view>/</view>
-						<view>分期支付</view>
-						<view>/</view>
-						<view>顺丰包邮</view>
-						<view>/</view>
-						<view>无忧退款</view>
-					</view>
-				</view>
-				<!-- 渲染品质男装一列 -->
-				<view class="home_operational">
-					<view class="ull">
-						<view v-for="(item,index) in pznz" :key="index">
-							 <image class="ullimg" :src="item.icon" alt="" />
-							 <text>{{item.title}}</text>
-						 </view>
-					</view>
-				</view>
-				<view class="blockline"></view>
+				<!-- 首页轮番 -->
+				<banner :banner="banner" :pznz="pznz" v-show="flag"></banner>
+				<!-- 点击头部列表切换 -->
+				<classify :threeLevelcategoryList="threeLevelcategoryList" v-show="!flag"></classify>
+				<view class="blockline" v-show="flag"></view>
 				<!-- 渲染首页内容列表 -->
 				<view class="product_list" id="product_list">
 					<view class="module_list" v-for="(item,index) in floorList" :key="index">
 						<view class="a">
-							<image :src="item.image" alt=""/>
+							<image v-if="item.image" :src="item.image" alt=""/>
+							<image v-else :src="item.data[1].image" alt=""/>
 						<view class="shop_show">
 							<view class="price">
 								<text>￥</text>
-								<text>{{item.priceStr}}</text>
+								<text v-if="item.priceStr">{{item.priceStr}}</text>
+								<text v-else>{{item.data[1].priceStr}}</text>
 							</view>
 							<view class="labels">
 								<text>爆品</text>
 								<text>一起拼</text>
 							</view>
-							<view class="escp module_subtitle">{{item.subtitle}}</view>
-							<view class="escp module_title">{{item.mainTitle}}</view>
-							<view class="last_line">{{item.thirdContent}}</view>
+							<view class="escp module_subtitle" v-if="item.subtitle">{{item.subtitle}}</view>
+							<view class="escp module_subtitle" v-else>{{item.data[1].subtitle}}</view>
+							<view class="escp module_title" v-if="item.mainTitle">{{item.mainTitle}}</view>
+							<view class="escp module_title" v-else>{{item.data[1].mainTitle}}</view>
+							<view class="last_line" v-if="item.thirdContent">{{item.thirdContent}}</view>
+							<view class="last_line" v-else>{{item.data[1].thirdContent}}</view>
 						</view>
 						</view>
 					</view>
@@ -84,8 +56,14 @@
 </template>
 
 <script>
-	import {getIndexBanner,getIndexBottom} from '@/api/index'
+	import {getIndexBanner,getIndexBottom,getHeaderClassify} from "@/api/index"
+	import banner from "../components/banner.vue"
+	import classify from "../components/classify.vue"
 	export default {
+		components:{
+			banner,
+			classify
+		},
 		data(){
 			return{
 				fontsize:13.333333,
@@ -94,7 +72,9 @@
 				banner:[],
 				pznz:[],
 				floorList:[],
-				pageIndex:1
+				pageIndex:1,
+				flag:true,
+				threeLevelcategoryList:[]
 			}
 		},
 		methods: {
@@ -102,12 +82,25 @@
 			searchClick(){
 				this.$tab.navigateTo('/search/search');
 			},
+			// 头部列表点击
 			headerListClick(item,index){
 				this.num = index;
+				const {categoryName,categoryId} = item;
+				// console.log(categoryName,index);
+				if(categoryName == "热门"){
+					this.flag = true;
+				}else{
+					this.flag = false;
+					getHeaderClassify(categoryId).then(res=>{
+						// console.log(res);
+						this.threeLevelcategoryList = res.subCategory.threeLevelcategoryList;
+						this.floorList = res.blockList[0].block;
+					})
+				}
 			},
 			async indexRender() {
 				let res = await getIndexBanner();
-				console.log(res);
+				// console.log(res);
 				const {typeonearr,banner,pznz,floorList} = res;
 				this.header_List = typeonearr;
 				this.banner = banner;

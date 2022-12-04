@@ -69,7 +69,10 @@
 		{
 			"root": "search",
 			"pages": [{
-				"path": "search"
+				"path": "search",
+				"style": {
+					"navigationStyle": "custom"
+				}
 			}]
 		}
 	],
